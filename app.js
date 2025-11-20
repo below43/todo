@@ -24,6 +24,7 @@ function setupEventListeners() {
         horizontalViewBtn.classList.add('active');
         stackedViewBtn.classList.remove('active');
         localStorage.setItem('boardView', 'horizontal');
+        loadBoard(); // Reload to update menus
     });
     
     stackedViewBtn.addEventListener('click', () => {
@@ -31,6 +32,7 @@ function setupEventListeners() {
         stackedViewBtn.classList.add('active');
         horizontalViewBtn.classList.remove('active');
         localStorage.setItem('boardView', 'stacked');
+        loadBoard(); // Reload to update menus
     });
     
     // Restore saved view preference
@@ -94,6 +96,23 @@ function createColumnElement(column, cards) {
     const columnEl = document.createElement('div');
     columnEl.className = 'column';
     columnEl.dataset.columnId = column.id;
+    columnEl.draggable = true;
+    
+    // Check if we're in stacked mode
+    const isStacked = document.getElementById('board').classList.contains('stacked');
+    
+    // Build menu items
+    let menuItems = `<button class="menu-item rename-column" data-column-id="${column.id}">✏️ Rename</button>`;
+    
+    // Add move up/down buttons in stacked mode
+    if (isStacked) {
+        menuItems += `
+            <button class="menu-item move-column-up" data-column-id="${column.id}">⬆️ Move Up</button>
+            <button class="menu-item move-column-down" data-column-id="${column.id}">⬇️ Move Down</button>
+        `;
+    }
+    
+    menuItems += `<button class="menu-item danger delete-column" data-column-id="${column.id}">🗑️ Delete</button>`;
     
     columnEl.innerHTML = `
         <div class="column-header">
@@ -102,8 +121,7 @@ function createColumnElement(column, cards) {
                 <div class="menu-container">
                     <button class="menu-btn column-menu-btn" data-column-id="${column.id}" title="Column menu">⋯</button>
                     <div class="dropdown-menu">
-                        <button class="menu-item rename-column" data-column-id="${column.id}">✏️ Rename</button>
-                        <button class="menu-item danger delete-column" data-column-id="${column.id}">🗑️ Delete</button>
+                        ${menuItems}
                     </div>
                 </div>
             </div>
@@ -143,6 +161,28 @@ function createColumnElement(column, cards) {
         editColumnTitle(column.id, titleEl);
     });
     
+    // Move up/down buttons in stacked mode
+    if (isStacked) {
+        const moveUpBtn = columnEl.querySelector('.move-column-up');
+        const moveDownBtn = columnEl.querySelector('.move-column-down');
+        
+        if (moveUpBtn) {
+            moveUpBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                menu.classList.remove('active');
+                await moveColumn(column.id, 'up');
+            });
+        }
+        
+        if (moveDownBtn) {
+            moveDownBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                menu.classList.remove('active');
+                await moveColumn(column.id, 'down');
+            });
+        }
+    }
+    
     // Delete column menu item
     const deleteBtn = columnEl.querySelector('.delete-column');
     deleteBtn.addEventListener('click', (e) => {
@@ -157,6 +197,9 @@ function createColumnElement(column, cards) {
     
     // Setup drag and drop for cards container
     setupDropZone(cardsContainer, column.id);
+    
+    // Setup drag and drop for columns
+    setupColumnDragDrop(columnEl, column.id);
     
     return columnEl;
 }
@@ -342,6 +385,111 @@ async function moveCard(cardId, newColumnId, cardsContainer) {
     await loadBoard();
 }
 
+// Column drag and drop
+let draggedColumn = null;
+
+function setupColumnDragDrop(columnEl, columnId) {
+    columnEl.addEventListener('dragstart', (e) => {
+        // Only drag if not dragging from a card
+        if (e.target.classList.contains('column')) {
+            draggedColumn = columnId;
+            columnEl.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+    });
+    
+    columnEl.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('column')) {
+            columnEl.classList.remove('dragging');
+            draggedColumn = null;
+        }
+    });
+    
+    columnEl.addEventListener('dragover', (e) => {
+        if (draggedColumn !== null && draggedColumn !== columnId) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const board = document.getElementById('board');
+            const draggingColumn = document.querySelector('.column.dragging');
+            
+            if (!draggingColumn) return;
+            
+            const afterElement = getColumnDragAfterElement(board, e.clientX);
+            
+            if (afterElement == null) {
+                board.appendChild(draggingColumn);
+            } else {
+                board.insertBefore(draggingColumn, afterElement);
+            }
+        }
+    });
+    
+    columnEl.addEventListener('drop', async (e) => {
+        if (draggedColumn !== null && draggedColumn !== columnId) {
+            e.preventDefault();
+            await reorderColumns();
+        }
+    });
+}
+
+function getColumnDragAfterElement(container, x) {
+    const draggableElements = [...container.querySelectorAll('.column:not(.dragging)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = x - box.left - box.width / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+async function reorderColumns() {
+    const board = document.getElementById('board');
+    const columnElements = [...board.querySelectorAll('.column')];
+    
+    // Update order for all columns based on DOM position
+    for (let i = 0; i < columnElements.length; i++) {
+        const columnId = parseInt(columnElements[i].dataset.columnId);
+        const column = columns.find(c => c.id === columnId);
+        if (column) {
+            column.order = i;
+            await kanbanDB.updateColumn(column);
+        }
+    }
+    
+    await loadBoard();
+}
+
+// Move column up or down (for stacked mode)
+async function moveColumn(columnId, direction) {
+    const columnIndex = columns.findIndex(c => c.id === columnId);
+    if (columnIndex === -1) return;
+    
+    let targetIndex;
+    if (direction === 'up') {
+        if (columnIndex === 0) return; // Already at top
+        targetIndex = columnIndex - 1;
+    } else { // down
+        if (columnIndex === columns.length - 1) return; // Already at bottom
+        targetIndex = columnIndex + 1;
+    }
+    
+    // Swap orders
+    const tempOrder = columns[columnIndex].order;
+    columns[columnIndex].order = columns[targetIndex].order;
+    columns[targetIndex].order = tempOrder;
+    
+    await kanbanDB.updateColumn(columns[columnIndex]);
+    await kanbanDB.updateColumn(columns[targetIndex]);
+    
+    await loadBoard();
+}
+
 // Edit column title inline
 function editColumnTitle(columnId, titleElement) {
     const currentTitle = titleElement.textContent;
@@ -423,6 +571,15 @@ function editCard(card) {
     });
     
     document.body.appendChild(modal);
+    
+    // Focus on title field and select all text after modal is rendered
+    setTimeout(() => {
+        const titleInput = modal.querySelector('input[name="title"]');
+        if (titleInput) {
+            titleInput.focus();
+            titleInput.select();
+        }
+    }, 10);
 }
 
 // Show move card modal

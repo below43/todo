@@ -2,7 +2,7 @@
     --primary-color: #4A90E2;
     --secondary-color: #357ABD;
     --background: #f5f6f8;
-    --column-bg: #ffffff;
+    --column-bg: #f7f8fa;
     --card-bg: #ffffff;
     --border-color: #dfe1e6;
     --text-primary: #172b4d;
@@ -114,6 +114,17 @@ h1 {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 200px);
+    cursor: grab;
+    transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.column:active {
+    cursor: grabbing;
+}
+
+.column.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
 }
 
 .column-header {
