@@ -2,6 +2,12 @@
 
 A modern, responsive Kanban board Progressive Web App (PWA) built with vanilla JavaScript and IndexedDB for persistent storage.
 
+## 🌐 Live Demo
+
+**Try it now:** [https://below43.github.io/todo/](https://below43.github.io/todo/)
+
+The app is automatically deployed to GitHub Pages from this branch.
+
 ## Features
 
 ### Core Functionality
