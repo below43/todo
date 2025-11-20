@@ -226,6 +226,8 @@ async function moveCard(cardId, newColumnId, cardsContainer) {
     await kanbanDB.updateCard(card);
     
     // Reorder other cards in the new column
+    // Note: This performs individual updates which is acceptable for typical Kanban boards.
+    // For boards with hundreds of cards per column, consider implementing batch updates.
     const columnCards = await kanbanDB.getCardsByColumn(newColumnId);
     for (let i = 0; i < columnCards.length; i++) {
         const c = columnCards[i];
