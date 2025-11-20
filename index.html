@@ -17,7 +17,13 @@
                 <img src="logo.png" alt="Kanban Board Logo" class="logo">
                 <h1>Kanban Board</h1>
             </div>
-            <button id="addColumnBtn" class="btn btn-primary">+ Add Column</button>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="view-toggle">
+                    <button id="horizontalViewBtn" class="toggle-btn active" title="Horizontal scroll view">📜 Scroll</button>
+                    <button id="stackedViewBtn" class="toggle-btn" title="Stacked view">📚 Stack</button>
+                </div>
+                <button id="addColumnBtn" class="btn btn-primary">+ Add Column</button>
+            </div>
         </header>
         
         <div id="board" class="board"></div>

@@ -13,6 +13,42 @@ async function init() {
 // Setup event listeners
 function setupEventListeners() {
     document.getElementById('addColumnBtn').addEventListener('click', showAddColumnModal);
+    
+    // View toggle buttons
+    const horizontalViewBtn = document.getElementById('horizontalViewBtn');
+    const stackedViewBtn = document.getElementById('stackedViewBtn');
+    const board = document.getElementById('board');
+    
+    horizontalViewBtn.addEventListener('click', () => {
+        board.classList.remove('stacked');
+        horizontalViewBtn.classList.add('active');
+        stackedViewBtn.classList.remove('active');
+        localStorage.setItem('boardView', 'horizontal');
+    });
+    
+    stackedViewBtn.addEventListener('click', () => {
+        board.classList.add('stacked');
+        stackedViewBtn.classList.add('active');
+        horizontalViewBtn.classList.remove('active');
+        localStorage.setItem('boardView', 'stacked');
+    });
+    
+    // Restore saved view preference
+    const savedView = localStorage.getItem('boardView');
+    if (savedView === 'stacked') {
+        board.classList.add('stacked');
+        stackedViewBtn.classList.add('active');
+        horizontalViewBtn.classList.remove('active');
+    }
+    
+    // Close menus when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.menu-container')) {
+            document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        }
+    });
 }
 
 // Load the entire board
@@ -61,9 +97,15 @@ function createColumnElement(column, cards) {
     
     columnEl.innerHTML = `
         <div class="column-header">
-            <div class="column-title" data-column-id="${column.id}">${column.title}</div>
+            <div class="column-title" data-column-id="${column.id}">${escapeHtml(column.title)}</div>
             <div class="column-actions">
-                <button class="icon-btn delete-column" data-column-id="${column.id}" title="Delete column">🗑️</button>
+                <div class="menu-container">
+                    <button class="menu-btn column-menu-btn" data-column-id="${column.id}" title="Column menu">⋯</button>
+                    <div class="dropdown-menu">
+                        <button class="menu-item rename-column" data-column-id="${column.id}">✏️ Rename</button>
+                        <button class="menu-item danger delete-column" data-column-id="${column.id}">🗑️ Delete</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="cards" data-column-id="${column.id}"></div>
@@ -81,9 +123,33 @@ function createColumnElement(column, cards) {
     const titleEl = columnEl.querySelector('.column-title');
     titleEl.addEventListener('dblclick', () => editColumnTitle(column.id, titleEl));
     
-    // Delete column button
+    // Column menu toggle
+    const menuBtn = columnEl.querySelector('.column-menu-btn');
+    const menu = columnEl.querySelector('.dropdown-menu');
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close other menus
+        document.querySelectorAll('.dropdown-menu.active').forEach(m => {
+            if (m !== menu) m.classList.remove('active');
+        });
+        menu.classList.toggle('active');
+    });
+    
+    // Rename column menu item
+    const renameBtn = columnEl.querySelector('.rename-column');
+    renameBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.remove('active');
+        editColumnTitle(column.id, titleEl);
+    });
+    
+    // Delete column menu item
     const deleteBtn = columnEl.querySelector('.delete-column');
-    deleteBtn.addEventListener('click', () => deleteColumn(column.id));
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.remove('active');
+        deleteColumn(column.id);
+    });
     
     // Add card button
     const addCardBtn = columnEl.querySelector('.add-card-btn');
@@ -109,7 +175,14 @@ function createCardElement(card) {
     }
     cardHTML += `
         <div class="card-actions">
-            <button class="icon-btn delete-card" data-card-id="${card.id}" title="Delete card">🗑️</button>
+            <div class="menu-container">
+                <button class="menu-btn card-menu-btn" data-card-id="${card.id}" title="Card menu">⋯</button>
+                <div class="dropdown-menu">
+                    <button class="menu-item edit-card" data-card-id="${card.id}">✏️ Edit</button>
+                    <button class="menu-item move-card" data-card-id="${card.id}">➡️ Move</button>
+                    <button class="menu-item danger delete-card" data-card-id="${card.id}">🗑️ Delete</button>
+                </div>
+            </div>
         </div>
     `;
     
@@ -117,15 +190,44 @@ function createCardElement(card) {
     
     // Double-click to edit
     cardEl.addEventListener('dblclick', (e) => {
-        if (!e.target.classList.contains('delete-card') && !e.target.classList.contains('card-link')) {
+        if (!e.target.closest('.menu-container') && !e.target.classList.contains('card-link')) {
             editCard(card);
         }
     });
     
-    // Delete card button
+    // Card menu toggle
+    const menuBtn = cardEl.querySelector('.card-menu-btn');
+    const menu = cardEl.querySelector('.dropdown-menu');
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close other menus
+        document.querySelectorAll('.dropdown-menu.active').forEach(m => {
+            if (m !== menu) m.classList.remove('active');
+        });
+        menu.classList.toggle('active');
+    });
+    
+    // Edit card menu item
+    const editBtn = cardEl.querySelector('.edit-card');
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.remove('active');
+        editCard(card);
+    });
+    
+    // Move card menu item
+    const moveBtn = cardEl.querySelector('.move-card');
+    moveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.remove('active');
+        showMoveCardModal(card);
+    });
+    
+    // Delete card menu item
     const deleteBtn = cardEl.querySelector('.delete-card');
     deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        menu.classList.remove('active');
         deleteCard(card.id);
     });
     
@@ -318,6 +420,69 @@ function editCard(card) {
         card.link = formData.link || '';
         await kanbanDB.updateCard(card);
         await loadBoard();
+    });
+    
+    document.body.appendChild(modal);
+}
+
+// Show move card modal
+async function showMoveCardModal(card) {
+    // Get all columns for the dropdown
+    const allColumns = await kanbanDB.getAllColumns();
+    const currentColumn = allColumns.find(col => col.id === card.columnId);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    
+    let columnOptions = '';
+    allColumns.forEach(col => {
+        const selected = col.id === card.columnId ? 'selected' : '';
+        columnOptions += `<option value="${col.id}" ${selected}>${escapeHtml(col.title)}</option>`;
+    });
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">Move Card</div>
+            <form id="modalForm">
+                <div class="form-group">
+                    <label for="targetColumn">Move to column:</label>
+                    <select id="targetColumn" name="targetColumn" class="form-select">
+                        ${columnOptions}
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Move</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    const form = modal.querySelector('#modalForm');
+    const cancelBtn = modal.querySelector('.cancel-btn');
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const targetColumnId = parseInt(form.elements.targetColumn.value);
+        
+        if (targetColumnId !== card.columnId) {
+            // Get cards in target column to set the order
+            const targetCards = await kanbanDB.getCardsByColumn(targetColumnId);
+            card.columnId = targetColumnId;
+            card.order = targetCards.length;
+            await kanbanDB.updateCard(card);
+            await loadBoard();
+        }
+        
+        modal.remove();
+    });
+    
+    cancelBtn.addEventListener('click', () => modal.remove());
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
     });
     
     document.body.appendChild(modal);
