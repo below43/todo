@@ -465,12 +465,25 @@ async function showMoveCardModal(card) {
         e.preventDefault();
         const targetColumnId = parseInt(form.elements.targetColumn.value);
         
+        // Validate the target column ID
+        if (isNaN(targetColumnId)) {
+            console.error('Invalid target column ID');
+            modal.remove();
+            return;
+        }
+        
         if (targetColumnId !== card.columnId) {
             // Get cards in target column to set the order
             const targetCards = await kanbanDB.getCardsByColumn(targetColumnId);
-            card.columnId = targetColumnId;
-            card.order = targetCards.length;
-            await kanbanDB.updateCard(card);
+            
+            // Create updated card object to avoid mutating parameter
+            const updatedCard = {
+                ...card,
+                columnId: targetColumnId,
+                order: targetCards.length
+            };
+            
+            await kanbanDB.updateCard(updatedCard);
             await loadBoard();
         }
         

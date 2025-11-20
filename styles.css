@@ -7,6 +7,9 @@
     --border-color: #dfe1e6;
     --text-primary: #172b4d;
     --text-secondary: #5e6c84;
+    --danger-color: #e74c3c;
+    --danger-hover: #c0392b;
+    --danger-bg-hover: #ffe5e5;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -87,12 +90,12 @@ h1 {
 }
 
 .btn-danger {
-    background-color: #e74c3c;
+    background-color: var(--danger-color);
     color: white;
 }
 
 .btn-danger:hover {
-    background-color: #c0392b;
+    background-color: var(--danger-hover);
 }
 
 .board {
@@ -181,7 +184,7 @@ h1 {
     position: absolute;
     top: 100%;
     right: 0;
-    background: white;
+    background: var(--card-bg);
     border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 150px;
@@ -219,11 +222,11 @@ h1 {
 }
 
 .menu-item.danger {
-    color: #e74c3c;
+    color: var(--danger-color);
 }
 
 .menu-item.danger:hover {
-    background-color: #ffe5e5;
+    background-color: var(--danger-bg-hover);
 }
 
 /* View toggle styles */
