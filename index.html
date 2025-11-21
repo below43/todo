@@ -32,14 +32,42 @@
     <script src="db.js"></script>
     <script src="app.js"></script>
     <script>
-        // Register service worker for PWA
+        // Register service worker for PWA with automatic updates
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => console.log('Service Worker registered'))
+                    .then(registration => {
+                        console.log('Service Worker registered');
+                        
+                        // Check for updates every 60 seconds
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000);
+                        
+                        // Handle updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    // New service worker activated, reload page
+                                    if (confirm('A new version is available! Reload to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
                     .catch(err => console.log('Service Worker registration failed:', err));
+                
+                // Handle controller change (when new SW takes over)
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    console.log('Service Worker updated, reloading page...');
+                    window.location.reload();
+                });
             });
         }
     </script>
+
 </body>
 </html>

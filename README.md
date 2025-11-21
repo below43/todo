@@ -106,11 +106,27 @@ todo/
 ├── styles.css          # Application styles
 ├── app.js              # Main application logic
 ├── db.js               # IndexedDB wrapper
-├── service-worker.js   # PWA service worker
+├── service-worker.js   # PWA service worker with auto-versioning
 ├── manifest.json       # PWA manifest
+├── update-version.js   # Build script to update SW cache version
 ├── logo.png            # App logo (512x512)
 └── favicon.ico         # Favicon (32x32)
 ```
+
+### Automatic Updates
+The PWA automatically checks for updates and uses cache versioning to ensure users get the latest version:
+
+- **Service Worker Versioning**: Cache version is automatically updated with each deployment using a timestamp
+- **Update Detection**: Checks for updates every 60 seconds when the app is open
+- **Auto-Reload**: Prompts users to reload when a new version is available
+- **Cache Management**: Old caches are automatically cleaned up when new versions activate
+
+To manually update the service worker version before deploying:
+```bash
+node update-version.js
+```
+
+This is automatically done during GitHub Pages deployment.
 
 ### Security
 - ✅ XSS protection via HTML escaping

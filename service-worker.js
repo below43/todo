@@ -1,4 +1,6 @@
-const CACHE_NAME = 'kanban-board-v1';
+// Version with timestamp to ensure updates on each deploy
+const CACHE_VERSION = '2025-11-21T01:10:02.820Z';
+const CACHE_NAME = `todo-board-v${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
     '/index.html',
@@ -12,10 +14,13 @@ const urlsToCache = [
 
 // Install service worker and cache files
 self.addEventListener('install', (event) => {
+    // Skip waiting to activate immediately
+    self.skipWaiting();
+    
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('Opened cache');
+                console.log('Opened cache:', CACHE_NAME);
                 return cache.addAll(urlsToCache);
             })
             .catch((error) => {
@@ -59,17 +64,20 @@ self.addEventListener('fetch', (event) => {
 
 // Activate service worker and remove old caches
 self.addEventListener('activate', (event) => {
-    const cacheWhitelist = [CACHE_NAME];
-    
+    // Claim clients immediately
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
+        clients.claim().then(() => {
+            // Clean up old caches
+            return caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            console.log('Deleting old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            });
         })
     );
 });
