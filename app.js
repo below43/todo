@@ -683,6 +683,14 @@ function showAddCardModal(columnId) {
     });
     
     document.body.appendChild(modal);
+    
+    // Focus on title field after modal is rendered
+    setTimeout(() => {
+        const titleInput = modal.querySelector('input[name="title"]');
+        if (titleInput) {
+            titleInput.focus();
+        }
+    }, 10);
 }
 
 // Edit card

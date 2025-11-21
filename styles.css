@@ -309,6 +309,7 @@ h1 {
     box-shadow: var(--shadow);
     cursor: grab;
     transition: box-shadow 0.2s, border-color 0.2s;
+    max-width: 400px;
 }
 
 .card:hover {
