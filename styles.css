@@ -113,7 +113,7 @@ h1 {
     box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 200px);
+    height: calc(100vh - 220px);
     cursor: grab;
     transition: opacity 0.2s, box-shadow 0.2s;
 }
@@ -125,6 +125,14 @@ h1 {
 .column.dragging {
     opacity: 0.5;
     cursor: grabbing;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .column {
+        height: calc(100vh - 180px);
+        min-height: 400px;
+    }
 }
 
 .column-header {

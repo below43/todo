@@ -2,6 +2,15 @@
 const kanbanDB = new KanbanDB();
 let columns = [];
 let draggedCard = null;
+let draggedColumn = null;
+
+// Touch drag support
+let touchStartTime = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+let longPressTimer = null;
+let isDraggingTouch = false;
+let touchDragElement = null;
 
 // Initialize the app
 async function init() {
@@ -278,6 +287,11 @@ function createCardElement(card) {
     cardEl.addEventListener('dragstart', handleDragStart);
     cardEl.addEventListener('dragend', handleDragEnd);
     
+    // Touch events for mobile drag and drop
+    cardEl.addEventListener('touchstart', handleTouchStart, { passive: false });
+    cardEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+    cardEl.addEventListener('touchend', handleTouchEnd);
+    
     return cardEl;
 }
 
@@ -386,8 +400,6 @@ async function moveCard(cardId, newColumnId, cardsContainer) {
 }
 
 // Column drag and drop
-let draggedColumn = null;
-
 function setupColumnDragDrop(columnEl, columnId) {
     columnEl.addEventListener('dragstart', (e) => {
         // Only drag if not dragging from a card
@@ -431,6 +443,11 @@ function setupColumnDragDrop(columnEl, columnId) {
             await reorderColumns();
         }
     });
+    
+    // Touch events for mobile drag and drop
+    columnEl.addEventListener('touchstart', handleTouchStart, { passive: false });
+    columnEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+    columnEl.addEventListener('touchend', handleTouchEnd);
 }
 
 function getColumnDragAfterElement(container, x) {
@@ -488,6 +505,116 @@ async function moveColumn(columnId, direction) {
     await kanbanDB.updateColumn(columns[targetIndex]);
     
     await loadBoard();
+}
+
+// Touch event handlers for drag and drop support
+function handleTouchStart(e) {
+    const target = e.currentTarget;
+    touchStartTime = Date.now();
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    
+    // Start long press timer (500ms)
+    longPressTimer = setTimeout(() => {
+        isDraggingTouch = true;
+        touchDragElement = target;
+        
+        // Determine if it's a card or column
+        if (target.classList.contains('card')) {
+            const cardId = parseInt(target.dataset.cardId);
+            const columnId = parseInt(target.dataset.columnId);
+            
+            if (!isNaN(cardId) && !isNaN(columnId)) {
+                draggedCard = { id: cardId, columnId: columnId };
+                target.classList.add('dragging');
+                // Provide haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+        } else if (target.classList.contains('column')) {
+            const columnId = parseInt(target.dataset.columnId);
+            if (!isNaN(columnId)) {
+                draggedColumn = columnId;
+                target.classList.add('dragging');
+                // Provide haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+        }
+    }, 500);
+}
+
+function handleTouchMove(e) {
+    if (!isDraggingTouch) {
+        // Cancel long press if moved too much before timer expires
+        const touch = e.touches[0];
+        const deltaX = Math.abs(touch.clientX - touchStartX);
+        const deltaY = Math.abs(touch.clientY - touchStartY);
+        
+        if (deltaX > 10 || deltaY > 10) {
+            clearTimeout(longPressTimer);
+        }
+        return;
+    }
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    
+    if (touchDragElement && touchDragElement.classList.contains('card')) {
+        // Handle card drag
+        const cardsContainer = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (cardsContainer && cardsContainer.classList.contains('cards')) {
+            const afterElement = getDragAfterElement(cardsContainer, touch.clientY);
+            
+            if (afterElement == null) {
+                cardsContainer.appendChild(touchDragElement);
+            } else {
+                cardsContainer.insertBefore(touchDragElement, afterElement);
+            }
+        }
+    } else if (touchDragElement && touchDragElement.classList.contains('column')) {
+        // Handle column drag
+        const board = document.getElementById('board');
+        const afterElement = getColumnDragAfterElement(board, touch.clientX);
+        
+        if (afterElement == null) {
+            board.appendChild(touchDragElement);
+        } else {
+            board.insertBefore(touchDragElement, afterElement);
+        }
+    }
+}
+
+async function handleTouchEnd(e) {
+    clearTimeout(longPressTimer);
+    
+    if (isDraggingTouch && touchDragElement) {
+        if (touchDragElement.classList.contains('card') && draggedCard) {
+            // Handle card drop
+            const cardsContainer = touchDragElement.closest('.cards');
+            if (cardsContainer) {
+                const newColumnId = parseInt(cardsContainer.dataset.columnId);
+                if (!isNaN(newColumnId)) {
+                    await moveCard(draggedCard.id, newColumnId, cardsContainer);
+                }
+            }
+        } else if (touchDragElement.classList.contains('column') && draggedColumn !== null) {
+            // Handle column drop
+            await reorderColumns();
+        }
+        
+        touchDragElement.classList.remove('dragging');
+    }
+    
+    // Reset touch drag state
+    isDraggingTouch = false;
+    touchDragElement = null;
+    draggedCard = null;
+    draggedColumn = null;
+    touchStartTime = 0;
 }
 
 // Edit column title inline
