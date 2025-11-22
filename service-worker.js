@@ -1,5 +1,5 @@
 // Version with timestamp to ensure updates on each deploy
-const CACHE_VERSION = '2025-11-21T01:10:02.820Z';
+const CACHE_VERSION = '2025-11-22T19:31:00.503Z';
 const CACHE_NAME = `todo-board-v${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
