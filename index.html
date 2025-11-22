@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="A simple Kanban board PWA for managing tasks">
+    <meta name="theme-color" content="#4A90E2">
+    <title>Todo Board</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <img src="logo.png" alt="Todo Board Logo" class="logo">
+                <h1>Todo Board</h1>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="view-toggle">
+                    <button id="horizontalViewBtn" class="toggle-btn active" title="Horizontal scroll view">📜 Scroll</button>
+                    <button id="stackedViewBtn" class="toggle-btn" title="Stacked view">📚 Stack</button>
+                </div>
+                <button id="addColumnBtn" class="btn btn-primary">+ Add Column</button>
+            </div>
+        </header>
+        
+        <div id="board" class="board"></div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Register service worker for PWA with automatic updates
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered');
+                        
+                        // Check for updates every 60 seconds
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000);
+                        
+                        // Handle updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    // New service worker activated, reload page
+                                    if (confirm('A new version is available! Reload to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.log('Service Worker registration failed:', err));
+                
+                // Handle controller change (when new SW takes over)
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    console.log('Service Worker updated, reloading page...');
+                    window.location.reload();
+                });
+            });
+        }
+    </script>
+
+</body>
+</html>
