@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - copilot/create-kanban-board-app
   workflow_dispatch:
 
 permissions:
