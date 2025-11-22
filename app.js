@@ -316,6 +316,8 @@ function handleDragStart(e) {
         columnId: columnId
     };
     e.target.classList.add('dragging');
+    // Prevent this event from bubbling up to the column's dragstart handler
+    e.stopPropagation();
 }
 
 function handleDragEnd(e) {
@@ -402,16 +404,19 @@ async function moveCard(cardId, newColumnId, cardsContainer) {
 // Column drag and drop
 function setupColumnDragDrop(columnEl, columnId) {
     columnEl.addEventListener('dragstart', (e) => {
-        // Only drag if not dragging from a card
-        if (e.target.classList.contains('column')) {
+        // Only drag column if the drag started on the column itself, not on a card or other child element
+        if (e.target === columnEl) {
             draggedColumn = columnId;
             columnEl.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+        } else {
+            // Prevent column from being draggable when dragging a card
+            e.stopPropagation();
         }
     });
     
     columnEl.addEventListener('dragend', (e) => {
-        if (e.target.classList.contains('column')) {
+        if (e.target === columnEl) {
             columnEl.classList.remove('dragging');
             draggedColumn = null;
         }
