@@ -107,6 +107,12 @@ function createColumnElement(column, cards) {
     columnEl.dataset.columnId = column.id;
     columnEl.draggable = true;
     
+    // Check if column is collapsed
+    const isCollapsed = isColumnCollapsed(column.id);
+    if (isCollapsed) {
+        columnEl.classList.add('collapsed');
+    }
+    
     // Check if we're in stacked mode
     const isStacked = document.getElementById('board').classList.contains('stacked');
     
@@ -123,9 +129,17 @@ function createColumnElement(column, cards) {
     
     menuItems += `<button class="menu-item danger delete-column" data-column-id="${column.id}">🗑️ Delete</button>`;
     
+    const cardCount = cards.length;
+    const collapseIcon = isCollapsed ? '▶' : '▼';
+    const collapseTitle = isCollapsed ? 'Expand column' : 'Collapse column';
+    
     columnEl.innerHTML = `
         <div class="column-header">
-            <div class="column-title" data-column-id="${column.id}">${escapeHtml(column.title)}</div>
+            <div class="column-header-left">
+                <button class="collapse-btn" data-column-id="${column.id}" title="${collapseTitle}">${collapseIcon}</button>
+                <div class="column-title" data-column-id="${column.id}">${escapeHtml(column.title)}</div>
+                <span class="card-count">${cardCount}</span>
+            </div>
             <div class="column-actions">
                 <div class="menu-container">
                     <button class="menu-btn column-menu-btn" data-column-id="${column.id}" title="Column menu">⋯</button>
@@ -144,6 +158,13 @@ function createColumnElement(column, cards) {
     cards.forEach(card => {
         const cardEl = createCardElement(card);
         cardsContainer.appendChild(cardEl);
+    });
+    
+    // Collapse button event listener
+    const collapseBtn = columnEl.querySelector('.collapse-btn');
+    collapseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleColumnCollapse(column.id);
     });
     
     // Column title double-click to edit
@@ -300,6 +321,50 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Column collapse functions
+function getCollapsedColumns() {
+    try {
+        const stored = localStorage.getItem('collapsedColumns');
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function isColumnCollapsed(columnId) {
+    const collapsed = getCollapsedColumns();
+    return collapsed.includes(columnId);
+}
+
+function toggleColumnCollapse(columnId) {
+    const collapsed = getCollapsedColumns();
+    const index = collapsed.indexOf(columnId);
+    
+    if (index === -1) {
+        collapsed.push(columnId);
+    } else {
+        collapsed.splice(index, 1);
+    }
+    
+    try {
+        localStorage.setItem('collapsedColumns', JSON.stringify(collapsed));
+    } catch (e) {
+        // Ignore storage errors (quota exceeded, etc.)
+    }
+    
+    // Update the DOM directly without full reload
+    const columnEl = document.querySelector(`.column[data-column-id="${columnId}"]`);
+    if (columnEl) {
+        columnEl.classList.toggle('collapsed');
+        const collapseBtn = columnEl.querySelector('.collapse-btn');
+        if (collapseBtn) {
+            const isCollapsed = columnEl.classList.contains('collapsed');
+            collapseBtn.textContent = isCollapsed ? '▶' : '▼';
+            collapseBtn.title = isCollapsed ? 'Expand column' : 'Collapse column';
+        }
+    }
 }
 
 // Drag and drop handlers
