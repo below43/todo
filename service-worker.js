@@ -9,7 +9,14 @@ const urlsToCache = [
     '/db.js',
     '/logo.png',
     '/favicon.ico',
-    '/manifest.json'
+    '/manifest.json',
+    'https://fonts.googleapis.com/icon?family=Material+Icons'
+];
+
+// Google Fonts domains that should be cached
+const GOOGLE_FONTS_DOMAINS = [
+    'fonts.googleapis.com',
+    'fonts.gstatic.com'
 ];
 
 // Install service worker and cache files
@@ -31,6 +38,46 @@ self.addEventListener('install', (event) => {
 
 // Fetch from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+    
+    // Check if this is a Google Fonts request
+    const isGoogleFonts = GOOGLE_FONTS_DOMAINS.some(domain => url.hostname === domain);
+    
+    if (isGoogleFonts) {
+        // For Google Fonts, use cache-first strategy with network fallback
+        event.respondWith(
+            caches.open(CACHE_NAME)
+                .then((cache) => {
+                    return cache.match(event.request)
+                        .then((cachedResponse) => {
+                            if (cachedResponse) {
+                                return cachedResponse;
+                            }
+                            
+                            // Not in cache, fetch from network
+                            return fetch(event.request)
+                                .then((networkResponse) => {
+                                    // Cache the response for future use
+                                    if (networkResponse && networkResponse.ok) {
+                                        cache.put(event.request, networkResponse.clone());
+                                    }
+                                    return networkResponse;
+                                })
+                                .catch(() => {
+                                    // Network failed and not in cache - return empty response
+                                    return new Response('', { status: 503, statusText: 'Service Unavailable' });
+                                });
+                        });
+                })
+                .catch(() => {
+                    // Cache failed, try network directly
+                    return fetch(event.request);
+                })
+        );
+        return;
+    }
+    
+    // For local resources, use cache-first strategy
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
