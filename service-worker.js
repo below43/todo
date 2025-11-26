@@ -1,5 +1,5 @@
 // Version with timestamp to ensure updates on each deploy
-const CACHE_VERSION = '2025-11-21T01:10:02.820Z';
+const CACHE_VERSION = '2025-11-26T22:20:00.000Z';
 const CACHE_NAME = `todo-board-v${CACHE_VERSION}`;
 const urlsToCache = [
     '/',
@@ -10,7 +10,8 @@ const urlsToCache = [
     '/logo.png',
     '/favicon.ico',
     '/manifest.json',
-    'https://fonts.googleapis.com/icon?family=Material+Icons'
+    'https://fonts.googleapis.com/icon?family=Material+Icons',
+    'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap'
 ];
 
 // Google Fonts domains that should be cached
