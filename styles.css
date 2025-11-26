@@ -375,6 +375,29 @@ h1 {
     font-size: 20px;
 }
 
+/* Add card icon button in column header */
+.add-card-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.add-card-icon-btn:hover {
+    background-color: var(--background);
+    color: var(--text-primary);
+}
+
+.add-card-icon-btn .material-icons {
+    font-size: 20px;
+}
+
 /* View toggle button group */
 .view-toggle-group {
     display: flex;
