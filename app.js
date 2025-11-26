@@ -23,24 +23,31 @@ async function init() {
 function setupEventListeners() {
     document.getElementById('addColumnBtn').addEventListener('click', showAddColumnModal);
     
-    // View toggle buttons
-    const horizontalViewBtn = document.getElementById('horizontalViewBtn');
-    const stackedViewBtn = document.getElementById('stackedViewBtn');
+    // View toggle button (single button that toggles between views)
+    const viewToggleBtn = document.getElementById('viewToggleBtn');
+    const viewToggleIcon = document.getElementById('viewToggleIcon');
     const board = document.getElementById('board');
     
-    horizontalViewBtn.addEventListener('click', () => {
-        board.classList.remove('stacked');
-        horizontalViewBtn.classList.add('active');
-        stackedViewBtn.classList.remove('active');
-        localStorage.setItem('boardView', 'horizontal');
-        loadBoard(); // Reload to update menus
-    });
+    // Function to update icon based on current view
+    const updateViewIcon = () => {
+        const isStacked = board.classList.contains('stacked');
+        // Show the icon for the CURRENT view (what user is seeing)
+        viewToggleIcon.textContent = isStacked ? 'view_agenda' : 'view_kanban';
+        viewToggleBtn.title = isStacked ? 'Switch to kanban view' : 'Switch to stacked view';
+    };
     
-    stackedViewBtn.addEventListener('click', () => {
-        board.classList.add('stacked');
-        stackedViewBtn.classList.add('active');
-        horizontalViewBtn.classList.remove('active');
-        localStorage.setItem('boardView', 'stacked');
+    viewToggleBtn.addEventListener('click', () => {
+        const isCurrentlyStacked = board.classList.contains('stacked');
+        if (isCurrentlyStacked) {
+            // Switch to horizontal/kanban view
+            board.classList.remove('stacked');
+            localStorage.setItem('boardView', 'horizontal');
+        } else {
+            // Switch to stacked view
+            board.classList.add('stacked');
+            localStorage.setItem('boardView', 'stacked');
+        }
+        updateViewIcon();
         loadBoard(); // Reload to update menus
     });
     
@@ -48,9 +55,8 @@ function setupEventListeners() {
     const savedView = localStorage.getItem('boardView');
     if (savedView === 'stacked') {
         board.classList.add('stacked');
-        stackedViewBtn.classList.add('active');
-        horizontalViewBtn.classList.remove('active');
     }
+    updateViewIcon();
     
     // Close menus when clicking outside
     document.addEventListener('click', (e) => {
