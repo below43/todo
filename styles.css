@@ -3,7 +3,7 @@
 :root {
     --primary-color: #4A90E2;
     --secondary-color: #357ABD;
-    --background: #f5f6f8;
+    --background: #e8eaed;
     --column-bg: #f7f8fa;
     --card-bg: #ffffff;
     --border-color: #dfe1e6;
@@ -315,6 +315,10 @@ h1 {
     color: var(--text-secondary);
     font-size: 18px;
     line-height: 1;
+}
+
+.menu-btn .material-icons {
+    font-size: 18px;
 }
 
 .menu-btn:hover {

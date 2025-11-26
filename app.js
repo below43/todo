@@ -195,7 +195,7 @@ function createColumnElement(column, cards) {
             </div>
             <div class="column-actions">
                 <div class="menu-container">
-                    <button class="menu-btn column-menu-btn" data-column-id="${column.id}" title="Column menu">⋯</button>
+                    <button class="menu-btn column-menu-btn" data-column-id="${column.id}" title="Column menu"><span class="material-icons">more_vert</span></button>
                     <div class="dropdown-menu">
                         ${menuItems}
                     </div>
@@ -302,7 +302,7 @@ function createCardElement(card) {
     cardHTML += `
         <div class="card-actions">
             <div class="menu-container">
-                <button class="menu-btn card-menu-btn" data-card-id="${card.id}" title="Card menu">⋯</button>
+                <button class="menu-btn card-menu-btn" data-card-id="${card.id}" title="Card menu"><span class="material-icons">more_vert</span></button>
                 <div class="dropdown-menu">
                     <button class="menu-item edit-card" data-card-id="${card.id}">✏️ Edit</button>
                     <button class="menu-item move-card" data-card-id="${card.id}">➡️ Move</button>
