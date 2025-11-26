@@ -1,7 +1,7 @@
 {
-    "name": "Kanban Board",
-    "short_name": "Kanban",
-    "description": "A simple Kanban board PWA for managing tasks",
+    "name": "TODO",
+    "short_name": "TODO",
+    "description": "A simple TODO board PWA for managing tasks",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#f5f6f8",
