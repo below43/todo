@@ -16,6 +16,9 @@
     --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.15);
     --header-bg: #ffffff;
     --modal-bg: #ffffff;
+    --btn-secondary-bg: #e4e6eb;
+    --btn-secondary-text: #172b4d;
+    --btn-secondary-hover: #d4d6db;
 }
 
 /* Dark mode */
@@ -35,6 +38,9 @@
     --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.4);
     --header-bg: #16213e;
     --modal-bg: #1f2940;
+    --btn-secondary-bg: #4a5568;
+    --btn-secondary-text: #e4e6eb;
+    --btn-secondary-hover: #5a6578;
 }
 
 * {
@@ -104,12 +110,12 @@ h1 {
 }
 
 .btn-secondary {
-    background-color: #e4e6eb;
-    color: var(--text-primary);
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
 }
 
 .btn-secondary:hover {
-    background-color: #d4d6db;
+    background-color: var(--btn-secondary-hover);
 }
 
 .btn-danger {
