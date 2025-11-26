@@ -170,17 +170,17 @@ function createColumnElement(column, cards) {
     const isStacked = document.getElementById('board').classList.contains('stacked');
     
     // Build menu items
-    let menuItems = `<button class="menu-item rename-column" data-column-id="${column.id}">✏️ Rename</button>`;
+    let menuItems = `<button class="menu-item rename-column" data-column-id="${column.id}"><span class="material-icons">edit</span>Rename</button>`;
     
     // Add move up/down buttons in stacked mode
     if (isStacked) {
         menuItems += `
-            <button class="menu-item move-column-up" data-column-id="${column.id}">⬆️ Move Up</button>
-            <button class="menu-item move-column-down" data-column-id="${column.id}">⬇️ Move Down</button>
+            <button class="menu-item move-column-up" data-column-id="${column.id}"><span class="material-icons">arrow_upward</span>Move Up</button>
+            <button class="menu-item move-column-down" data-column-id="${column.id}"><span class="material-icons">arrow_downward</span>Move Down</button>
         `;
     }
     
-    menuItems += `<button class="menu-item danger delete-column" data-column-id="${column.id}">🗑️ Delete</button>`;
+    menuItems += `<button class="menu-item danger delete-column" data-column-id="${column.id}"><span class="material-icons">delete</span>Delete</button>`;
     
     const cardCount = cards.length;
     const collapseIcon = isCollapsed ? '▶' : '▼';
@@ -311,9 +311,9 @@ function createCardElement(card) {
             <div class="menu-container">
                 <button class="menu-btn card-menu-btn" data-card-id="${card.id}" title="Card menu"><span class="material-icons">more_vert</span></button>
                 <div class="dropdown-menu">
-                    <button class="menu-item edit-card" data-card-id="${card.id}">✏️ Edit</button>
-                    <button class="menu-item move-card" data-card-id="${card.id}">➡️ Move</button>
-                    <button class="menu-item danger delete-card" data-card-id="${card.id}">🗑️ Delete</button>
+                    <button class="menu-item edit-card" data-card-id="${card.id}"><span class="material-icons">edit</span>Edit</button>
+                    <button class="menu-item move-card" data-card-id="${card.id}"><span class="material-icons">arrow_forward</span>Move</button>
+                    <button class="menu-item danger delete-card" data-card-id="${card.id}"><span class="material-icons">delete</span>Delete</button>
                 </div>
             </div>
         </div>
