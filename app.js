@@ -325,8 +325,12 @@ function escapeHtml(text) {
 
 // Column collapse functions
 function getCollapsedColumns() {
-    const stored = localStorage.getItem('collapsedColumns');
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem('collapsedColumns');
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        return [];
+    }
 }
 
 function isColumnCollapsed(columnId) {
@@ -344,7 +348,11 @@ function toggleColumnCollapse(columnId) {
         collapsed.splice(index, 1);
     }
     
-    localStorage.setItem('collapsedColumns', JSON.stringify(collapsed));
+    try {
+        localStorage.setItem('collapsedColumns', JSON.stringify(collapsed));
+    } catch (e) {
+        // Ignore storage errors (quota exceeded, etc.)
+    }
     
     // Update the DOM directly without full reload
     const columnEl = document.querySelector(`.column[data-column-id="${columnId}"]`);
