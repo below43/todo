@@ -344,7 +344,9 @@ h1 {
 }
 
 .menu-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
     padding: 10px 15px;
     border: none;
@@ -354,6 +356,11 @@ h1 {
     font-size: 14px;
     color: var(--text-primary);
     transition: background-color 0.2s;
+}
+
+.menu-item .material-icons {
+    font-size: 18px;
+    color: var(--text-secondary);
 }
 
 .menu-item:first-child {
