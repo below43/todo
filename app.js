@@ -183,13 +183,13 @@ function createColumnElement(column, cards) {
     menuItems += `<button class="menu-item danger delete-column" data-column-id="${column.id}"><span class="material-icons">delete</span>Delete</button>`;
     
     const cardCount = cards.length;
-    const collapseIcon = isCollapsed ? '▶' : '▼';
+    const collapseIcon = isCollapsed ? 'chevron_right' : 'expand_more';
     const collapseTitle = isCollapsed ? 'Expand column' : 'Collapse column';
     
     columnEl.innerHTML = `
         <div class="column-header">
             <div class="column-header-left">
-                <button class="collapse-btn" data-column-id="${column.id}" title="${collapseTitle}">${collapseIcon}</button>
+                <button class="collapse-btn" data-column-id="${column.id}" title="${collapseTitle}"><span class="material-icons">${collapseIcon}</span></button>
                 <div class="column-title" data-column-id="${column.id}">${escapeHtml(column.title)}</div>
                 <span class="card-count">${cardCount}</span>
             </div>
@@ -421,7 +421,10 @@ function toggleColumnCollapse(columnId) {
         const collapseBtn = columnEl.querySelector('.collapse-btn');
         if (collapseBtn) {
             const isCollapsed = columnEl.classList.contains('collapsed');
-            collapseBtn.textContent = isCollapsed ? '▶' : '▼';
+            const iconSpan = collapseBtn.querySelector('.material-icons');
+            if (iconSpan) {
+                iconSpan.textContent = isCollapsed ? 'chevron_right' : 'expand_more';
+            }
             collapseBtn.title = isCollapsed ? 'Expand column' : 'Collapse column';
         }
     }
