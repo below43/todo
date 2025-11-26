@@ -8,6 +8,7 @@
     <title>TODO</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,12 +18,18 @@
                 <img src="logo.png" alt="TODO Logo" class="logo">
                 <h1>TODO</h1>
             </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <div class="view-toggle">
-                    <button id="horizontalViewBtn" class="toggle-btn active" title="Horizontal scroll view">📜 Scroll</button>
-                    <button id="stackedViewBtn" class="toggle-btn" title="Stacked view">📚 Stack</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div class="view-toggle-group">
+                    <button id="kanbanViewBtn" class="view-toggle-btn active" title="Kanban view">
+                        <span class="material-icons">view_kanban</span>
+                    </button>
+                    <button id="stackedViewBtn" class="view-toggle-btn" title="Stacked view">
+                        <span class="material-icons">view_agenda</span>
+                    </button>
                 </div>
-                <button id="addColumnBtn" class="btn btn-primary">+ Add Column</button>
+                <button id="addColumnBtn" class="add-column-icon-btn" title="Add Column">
+                    <span class="material-icons">add</span>
+                </button>
             </div>
         </header>
         

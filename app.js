@@ -23,14 +23,14 @@ async function init() {
 function setupEventListeners() {
     document.getElementById('addColumnBtn').addEventListener('click', showAddColumnModal);
     
-    // View toggle buttons
-    const horizontalViewBtn = document.getElementById('horizontalViewBtn');
+    // View toggle buttons (side by side toggle)
+    const kanbanViewBtn = document.getElementById('kanbanViewBtn');
     const stackedViewBtn = document.getElementById('stackedViewBtn');
     const board = document.getElementById('board');
     
-    horizontalViewBtn.addEventListener('click', () => {
+    kanbanViewBtn.addEventListener('click', () => {
         board.classList.remove('stacked');
-        horizontalViewBtn.classList.add('active');
+        kanbanViewBtn.classList.add('active');
         stackedViewBtn.classList.remove('active');
         localStorage.setItem('boardView', 'horizontal');
         loadBoard(); // Reload to update menus
@@ -39,7 +39,7 @@ function setupEventListeners() {
     stackedViewBtn.addEventListener('click', () => {
         board.classList.add('stacked');
         stackedViewBtn.classList.add('active');
-        horizontalViewBtn.classList.remove('active');
+        kanbanViewBtn.classList.remove('active');
         localStorage.setItem('boardView', 'stacked');
         loadBoard(); // Reload to update menus
     });
@@ -49,7 +49,7 @@ function setupEventListeners() {
     if (savedView === 'stacked') {
         board.classList.add('stacked');
         stackedViewBtn.classList.add('active');
-        horizontalViewBtn.classList.remove('active');
+        kanbanViewBtn.classList.remove('active');
     }
     
     // Close menus when clicking outside
