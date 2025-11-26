@@ -410,9 +410,12 @@ function setupColumnDragDrop(columnEl, columnId) {
         }
     });
     
-    columnEl.addEventListener('dragend', (e) => {
+    columnEl.addEventListener('dragend', async (e) => {
         if (e.target.classList.contains('column')) {
             columnEl.classList.remove('dragging');
+            if (draggedColumn !== null) {
+                await reorderColumns();
+            }
             draggedColumn = null;
         }
     });
@@ -437,10 +440,10 @@ function setupColumnDragDrop(columnEl, columnId) {
         }
     });
     
-    columnEl.addEventListener('drop', async (e) => {
+    columnEl.addEventListener('drop', (e) => {
         if (draggedColumn !== null) {
             e.preventDefault();
-            await reorderColumns();
+            // reorderColumns() is called in dragend to avoid duplicate calls
         }
     });
     
