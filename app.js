@@ -194,6 +194,9 @@ function createColumnElement(column, cards) {
                 <span class="card-count">${cardCount}</span>
             </div>
             <div class="column-actions">
+                <button class="add-card-icon-btn" data-column-id="${column.id}" title="Add Card">
+                    <span class="material-icons">add</span>
+                </button>
                 <div class="menu-container">
                     <button class="menu-btn column-menu-btn" data-column-id="${column.id}" title="Column menu"><span class="material-icons">more_vert</span></button>
                     <div class="dropdown-menu">
@@ -274,7 +277,11 @@ function createColumnElement(column, cards) {
         deleteColumn(column.id);
     });
     
-    // Add card button
+    // Add card button (in header)
+    const addCardIconBtn = columnEl.querySelector('.add-card-icon-btn');
+    addCardIconBtn.addEventListener('click', () => showAddCardModal(column.id));
+    
+    // Add card button (at bottom)
     const addCardBtn = columnEl.querySelector('.add-card-btn');
     addCardBtn.addEventListener('click', () => showAddCardModal(column.id));
     
