@@ -164,6 +164,107 @@ h1 {
     gap: 5px;
 }
 
+.column-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.collapse-btn:hover {
+    background-color: var(--background);
+    color: var(--text-primary);
+}
+
+.card-count {
+    background-color: var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/* Collapsed column styles for scroll mode */
+.column.collapsed {
+    min-width: 60px;
+    width: 60px;
+    padding: 15px 10px;
+}
+
+.column.collapsed .column-header {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.column.collapsed .column-header-left {
+    flex-direction: column;
+    gap: 8px;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+}
+
+.column.collapsed .collapse-btn {
+    writing-mode: horizontal-tb;
+}
+
+.column.collapsed .column-title {
+    font-size: 14px;
+    padding: 5px 2px;
+}
+
+.column.collapsed .card-count {
+    writing-mode: horizontal-tb;
+}
+
+.column.collapsed .column-actions {
+    display: none;
+}
+
+.column.collapsed .cards {
+    display: none;
+}
+
+.column.collapsed .add-card-btn {
+    display: none;
+}
+
+/* Collapsed column styles for stacked mode */
+.board.stacked .column.collapsed {
+    min-width: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    padding: 15px;
+}
+
+.board.stacked .column.collapsed .column-header {
+    flex-direction: row;
+    gap: 0;
+}
+
+.board.stacked .column.collapsed .column-header-left {
+    flex-direction: row;
+    writing-mode: horizontal-tb;
+}
+
 .icon-btn {
     background: none;
     border: none;
