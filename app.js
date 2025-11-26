@@ -21,7 +21,34 @@ async function init() {
 
 // Setup event listeners
 function setupEventListeners() {
-    document.getElementById('addColumnBtn').addEventListener('click', showAddColumnModal);
+    // Settings menu
+    const settingsMenuBtn = document.getElementById('settingsMenuBtn');
+    const settingsDropdownMenu = document.getElementById('settingsDropdownMenu');
+    const settingsAddColumnBtn = document.getElementById('settingsAddColumnBtn');
+    const settingsThemeToggleBtn = document.getElementById('settingsThemeToggleBtn');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    
+    settingsMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsDropdownMenu.classList.toggle('active');
+    });
+    
+    settingsAddColumnBtn.addEventListener('click', () => {
+        settingsDropdownMenu.classList.remove('active');
+        showAddColumnModal();
+    });
+    
+    settingsThemeToggleBtn.addEventListener('click', () => {
+        settingsDropdownMenu.classList.remove('active');
+        toggleTheme();
+    });
+    
+    themeToggleBtn.addEventListener('click', () => {
+        toggleTheme();
+    });
+    
+    // Apply saved theme on load
+    applySavedTheme();
     
     // View toggle buttons (side by side toggle)
     const kanbanViewBtn = document.getElementById('kanbanViewBtn');
@@ -59,7 +86,33 @@ function setupEventListeners() {
                 menu.classList.remove('active');
             });
         }
+        if (!e.target.closest('.settings-menu-container')) {
+            document.querySelectorAll('.settings-dropdown-menu.active').forEach(menu => {
+                menu.classList.remove('active');
+            });
+        }
     });
+}
+
+// Theme toggle functions
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+        // Check for system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    }
 }
 
 // Load the entire board
