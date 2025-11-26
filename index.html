@@ -19,9 +19,14 @@
                 <h1>TODO</h1>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button id="viewToggleBtn" class="icon-toggle-btn" title="Toggle view">
-                    <span class="material-icons" id="viewToggleIcon">view_kanban</span>
-                </button>
+                <div class="view-toggle-group">
+                    <button id="kanbanViewBtn" class="view-toggle-btn active" title="Kanban view">
+                        <span class="material-icons">view_kanban</span>
+                    </button>
+                    <button id="stackedViewBtn" class="view-toggle-btn" title="Stacked view">
+                        <span class="material-icons">view_agenda</span>
+                    </button>
+                </div>
                 <button id="addColumnBtn" class="add-column-icon-btn" title="Add Column">
                     <span class="material-icons">add</span>
                 </button>
