@@ -302,10 +302,12 @@ function createCardElement(card) {
     cardEl.dataset.cardId = card.id;
     cardEl.dataset.columnId = card.columnId;
     
-    let cardHTML = `<div class="card-title">${escapeHtml(card.title)}</div>`;
+    let cardHTML = `<div class="card-header">`;
+    cardHTML += `<div class="card-title">${escapeHtml(card.title)}</div>`;
     if (card.link) {
-        cardHTML += `<a href="${escapeHtml(card.link)}" class="card-link" target="_blank" rel="noopener noreferrer">${escapeHtml(card.link)}</a>`;
+        cardHTML += `<a href="${escapeHtml(card.link)}" class="card-link-icon" target="_blank" rel="noopener noreferrer" title="${escapeHtml(card.link)}"><span class="material-icons">link</span></a>`;
     }
+    cardHTML += `</div>`;
     cardHTML += `
         <div class="card-actions">
             <div class="menu-container">
