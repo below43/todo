@@ -438,7 +438,7 @@ function setupColumnDragDrop(columnEl, columnId) {
     });
     
     columnEl.addEventListener('drop', async (e) => {
-        if (draggedColumn !== null && draggedColumn !== columnId) {
+        if (draggedColumn !== null) {
             e.preventDefault();
             await reorderColumns();
         }
