@@ -171,6 +171,7 @@ h1 {
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid var(--border-color);
+    gap: 8px;
 }
 
 .column-title {
@@ -241,6 +242,8 @@ h1 {
 
 .column.collapsed .column-header {
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     gap: 10px;
     margin-bottom: 0;
     padding-bottom: 0;
@@ -252,15 +255,6 @@ h1 {
     gap: 8px;
     writing-mode: vertical-lr;
     text-orientation: mixed;
-}
-
-.column.collapsed .collapse-btn {
-    writing-mode: horizontal-tb;
-}
-
-.column.collapsed .collapse-btn .material-icons {
-    writing-mode: horizontal-tb;
-    display: inline-block;
 }
 
 .column.collapsed .column-title {

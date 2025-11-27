@@ -188,8 +188,8 @@ function createColumnElement(column, cards) {
     
     columnEl.innerHTML = `
         <div class="column-header">
+            <button class="collapse-btn" data-column-id="${column.id}" title="${collapseTitle}"><span class="material-icons">${collapseIcon}</span></button>
             <div class="column-header-left">
-                <button class="collapse-btn" data-column-id="${column.id}" title="${collapseTitle}"><span class="material-icons">${collapseIcon}</span></button>
                 <div class="column-title" data-column-id="${column.id}">${escapeHtml(column.title)}</div>
                 <span class="card-count">${cardCount}</span>
             </div>
