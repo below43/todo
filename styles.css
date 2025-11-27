@@ -877,11 +877,42 @@ h1 {
 }
 
 .list-selector-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
+}
+
+.list-add-btn {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.list-add-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.list-add-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+}
+
+.list-add-btn .material-icons {
+    font-size: 18px;
 }
 
 .list-items {
