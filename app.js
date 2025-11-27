@@ -1316,16 +1316,14 @@ function encodeListData(listTitle, columnsData, cardsData) {
         cards: cardsData.map(card => ({
             title: card.title,
             link: card.link || '',
-            columnIndex: columnsData.findIndex(col => col.id === card.columnId),
+            columnIndex: Math.max(0, columnsData.findIndex(col => col.id === card.columnId)),
             order: card.order
         }))
     };
     
     const jsonString = JSON.stringify(data);
-    // Use encodeURIComponent to handle unicode characters before base64 encoding
-    const base64 = btoa(encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-        return String.fromCharCode(parseInt(p1, 16));
-    }));
+    // Use simpler approach for Unicode handling
+    const base64 = btoa(unescape(encodeURIComponent(jsonString)));
     
     return base64;
 }
@@ -1333,12 +1331,8 @@ function encodeListData(listTitle, columnsData, cardsData) {
 // Decode base64 to list data
 function decodeListData(base64) {
     try {
-        // Decode base64 and handle unicode characters
-        const jsonString = decodeURIComponent(
-            Array.from(atob(base64), c => 
-                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-            ).join('')
-        );
+        // Decode base64 with Unicode support
+        const jsonString = decodeURIComponent(escape(atob(base64)));
         return JSON.parse(jsonString);
     } catch (e) {
         console.error('Failed to decode shared list data:', e);
@@ -1591,95 +1585,105 @@ async function generateUniqueListTitle(baseTitle) {
 async function overwriteExistingList(existingList) {
     if (!sharedListData) return;
     
-    // Delete existing columns and cards
-    await kanbanDB.deleteColumnsByList(existingList.id);
-    
-    // Create new columns
-    const columnIdMap = {};
-    for (let i = 0; i < sharedListData.columns.length; i++) {
-        const col = sharedListData.columns[i];
-        const newColId = await kanbanDB.addColumn({
-            title: col.title,
-            order: col.order,
-            listId: existingList.id
-        });
-        columnIdMap[i] = newColId;
-    }
-    
-    // Create new cards
-    for (const card of sharedListData.cards) {
-        const columnId = columnIdMap[card.columnIndex];
-        if (columnId !== undefined) {
-            await kanbanDB.addCard({
-                title: card.title,
-                link: card.link || '',
-                columnId: columnId,
-                order: card.order
+    try {
+        // Delete existing columns and cards
+        await kanbanDB.deleteColumnsByList(existingList.id);
+        
+        // Create new columns
+        const columnIdMap = {};
+        for (let i = 0; i < sharedListData.columns.length; i++) {
+            const col = sharedListData.columns[i];
+            const newColId = await kanbanDB.addColumn({
+                title: col.title,
+                order: col.order,
+                listId: existingList.id
             });
+            columnIdMap[i] = newColId;
         }
+        
+        // Create new cards (only for valid column indices)
+        for (const card of sharedListData.cards) {
+            const columnId = columnIdMap[card.columnIndex];
+            if (columnId !== undefined && card.columnIndex >= 0) {
+                await kanbanDB.addCard({
+                    title: card.title,
+                    link: card.link || '',
+                    columnId: columnId,
+                    order: card.order
+                });
+            }
+        }
+        
+        // Switch to this list and exit view-only mode
+        currentListId = existingList.id;
+        localStorage.setItem('currentListId', currentListId);
+        
+        disableViewOnlyMode();
+        await loadLists();
+    } catch (error) {
+        console.error('Failed to overwrite list:', error);
+        alert('Failed to save the list. Please try again.');
     }
-    
-    // Switch to this list and exit view-only mode
-    currentListId = existingList.id;
-    localStorage.setItem('currentListId', currentListId);
-    
-    disableViewOnlyMode();
-    await loadLists();
 }
 
 // Save shared list as a new list
 async function saveSharedListAsNew(title) {
     if (!sharedListData) return;
     
-    // Create new list
-    const newListId = await kanbanDB.addList({
-        title: title,
-        order: lists.length
-    });
-    
-    // Create columns
-    const columnIdMap = {};
-    for (let i = 0; i < sharedListData.columns.length; i++) {
-        const col = sharedListData.columns[i];
-        const newColId = await kanbanDB.addColumn({
-            title: col.title,
-            order: col.order,
-            listId: newListId
+    try {
+        // Create new list
+        const newListId = await kanbanDB.addList({
+            title: title,
+            order: lists.length
         });
-        columnIdMap[i] = newColId;
-    }
-    
-    // Create cards
-    for (const card of sharedListData.cards) {
-        const columnId = columnIdMap[card.columnIndex];
-        if (columnId !== undefined) {
-            await kanbanDB.addCard({
-                title: card.title,
-                link: card.link || '',
-                columnId: columnId,
-                order: card.order
+        
+        // Create columns
+        const columnIdMap = {};
+        for (let i = 0; i < sharedListData.columns.length; i++) {
+            const col = sharedListData.columns[i];
+            const newColId = await kanbanDB.addColumn({
+                title: col.title,
+                order: col.order,
+                listId: newListId
             });
+            columnIdMap[i] = newColId;
         }
+        
+        // Create cards (only for valid column indices)
+        for (const card of sharedListData.cards) {
+            const columnId = columnIdMap[card.columnIndex];
+            if (columnId !== undefined && card.columnIndex >= 0) {
+                await kanbanDB.addCard({
+                    title: card.title,
+                    link: card.link || '',
+                    columnId: columnId,
+                    order: card.order
+                });
+            }
+        }
+        
+        // Switch to the new list and exit view-only mode
+        currentListId = newListId;
+        localStorage.setItem('currentListId', currentListId);
+        
+        disableViewOnlyMode();
+        await loadLists();
+    } catch (error) {
+        console.error('Failed to save new list:', error);
+        alert('Failed to save the list. Please try again.');
     }
-    
-    // Switch to the new list and exit view-only mode
-    currentListId = newListId;
-    localStorage.setItem('currentListId', currentListId);
-    
-    disableViewOnlyMode();
-    await loadLists();
 }
 
 // Show share modal
 async function showShareModal() {
     if (isViewOnlyMode) {
-        alert('Cannot share a view-only list. Please save it first.');
+        alert('Cannot share a view-only list. Click the "Edit" button to save it as your own list first.');
         return;
     }
     
     const currentList = lists.find(l => l.id === currentListId);
     if (!currentList) {
-        alert('No list selected to share.');
+        alert('Please select a list to share.');
         return;
     }
     
@@ -1752,7 +1756,7 @@ async function showShareModal() {
                     copyBtn.innerHTML = '<span class="material-icons">content_copy</span> Copy URL';
                 }, 2000);
             } catch (execErr) {
-                alert('Failed to copy URL. Please select and copy manually.');
+                alert('Failed to copy URL automatically. Please manually select and copy the URL from the text box above.');
             }
             document.body.removeChild(textArea);
         }
