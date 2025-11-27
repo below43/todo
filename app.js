@@ -223,7 +223,7 @@ function createColumnElement(column, cards) {
     menuItems += `<button class="menu-item danger delete-column" data-column-id="${column.id}"><span class="material-icons">delete</span>Delete</button>`;
     
     const cardCount = cards.length;
-    const collapseIcon = isCollapsed ? 'chevron_right' : 'expand_more';
+    const collapseIcon = getCollapseIcon(isStacked, isCollapsed);
     const collapseTitle = isCollapsed ? 'Expand column' : 'Collapse column';
     
     columnEl.innerHTML = `
@@ -426,6 +426,14 @@ function escapeHtml(text) {
 }
 
 // Column collapse functions
+function getCollapseIcon(isStacked, isCollapsed) {
+    // In column mode (horizontal), use chevron_left/chevron_right
+    // In stacked mode (vertical), use expand_less/expand_more
+    return isStacked
+        ? (isCollapsed ? 'expand_more' : 'expand_less')
+        : (isCollapsed ? 'chevron_right' : 'chevron_left');
+}
+
 function getCollapsedColumns() {
     try {
         const stored = localStorage.getItem('collapsedColumns');
@@ -463,9 +471,10 @@ function toggleColumnCollapse(columnId) {
         const collapseBtn = columnEl.querySelector('.collapse-btn');
         if (collapseBtn) {
             const isCollapsed = columnEl.classList.contains('collapsed');
+            const isStacked = document.getElementById('board').classList.contains('stacked');
             const iconSpan = collapseBtn.querySelector('.material-icons');
             if (iconSpan) {
-                iconSpan.textContent = isCollapsed ? 'chevron_right' : 'expand_more';
+                iconSpan.textContent = getCollapseIcon(isStacked, isCollapsed);
             }
             collapseBtn.title = isCollapsed ? 'Expand column' : 'Collapse column';
         }
