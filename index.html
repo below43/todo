@@ -16,7 +16,12 @@
         <header>
             <div class="header-content">
                 <img src="logo.png" alt="TODO Logo" class="logo">
-                <h1>TODO</h1>
+                <div class="list-title-container">
+                    <h1 id="listTitle" class="list-title" title="Click to edit list name">TODO</h1>
+                    <button id="listSelectorBtn" class="list-selector-btn" title="Select list">
+                        <span class="material-icons">expand_more</span>
+                    </button>
+                </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <div class="view-toggle-group">
@@ -35,6 +40,10 @@
                         <span class="material-icons">more_vert</span>
                     </button>
                     <div id="settingsDropdownMenu" class="settings-dropdown-menu">
+                        <button id="settingsAddListBtn" class="settings-menu-item">
+                            <span class="material-icons">playlist_add</span>
+                            Add New List
+                        </button>
                         <button id="settingsAddColumnBtn" class="settings-menu-item">
                             <span class="material-icons">add</span>
                             Add Column

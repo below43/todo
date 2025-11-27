@@ -1,6 +1,8 @@
 // Main application logic
 const kanbanDB = new KanbanDB();
 let columns = [];
+let currentListId = null;
+let lists = [];
 let draggedCard = null;
 let draggedColumn = null;
 
@@ -15,8 +17,32 @@ let touchDragElement = null;
 // Initialize the app
 async function init() {
     await kanbanDB.init();
-    await loadBoard();
+    await loadLists();
     setupEventListeners();
+}
+
+// Load all lists and set current list
+async function loadLists() {
+    lists = await kanbanDB.getAllLists();
+    
+    // If no lists exist, create a default one
+    if (lists.length === 0) {
+        const defaultListId = await kanbanDB.addList({ title: 'TODO', order: 0 });
+        lists = await kanbanDB.getAllLists();
+        currentListId = defaultListId;
+        await createDefaultColumns();
+    } else {
+        // Load saved current list or use first one
+        const savedListId = localStorage.getItem('currentListId');
+        if (savedListId && lists.some(l => l.id === parseInt(savedListId))) {
+            currentListId = parseInt(savedListId);
+        } else {
+            currentListId = lists[0].id;
+        }
+    }
+    
+    updateListTitle();
+    await loadBoard();
 }
 
 // Setup event listeners
@@ -24,13 +50,27 @@ function setupEventListeners() {
     // Settings menu
     const settingsMenuBtn = document.getElementById('settingsMenuBtn');
     const settingsDropdownMenu = document.getElementById('settingsDropdownMenu');
+    const settingsAddListBtn = document.getElementById('settingsAddListBtn');
     const settingsAddColumnBtn = document.getElementById('settingsAddColumnBtn');
     const settingsThemeToggleBtn = document.getElementById('settingsThemeToggleBtn');
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     
+    // List title click to edit
+    const listTitle = document.getElementById('listTitle');
+    listTitle.addEventListener('click', () => editListTitle());
+    
+    // List selector button
+    const listSelectorBtn = document.getElementById('listSelectorBtn');
+    listSelectorBtn.addEventListener('click', () => showListSelectorModal());
+    
     settingsMenuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         settingsDropdownMenu.classList.toggle('active');
+    });
+    
+    settingsAddListBtn.addEventListener('click', () => {
+        settingsDropdownMenu.classList.remove('active');
+        showAddListModal();
     });
     
     settingsAddColumnBtn.addEventListener('click', () => {
@@ -117,12 +157,12 @@ function applySavedTheme() {
 
 // Load the entire board
 async function loadBoard() {
-    columns = await kanbanDB.getAllColumns();
+    columns = await kanbanDB.getColumnsByList(currentListId);
     
-    // If no columns exist, create default ones
+    // If no columns exist for this list, create default ones
     if (columns.length === 0) {
         await createDefaultColumns();
-        columns = await kanbanDB.getAllColumns();
+        columns = await kanbanDB.getColumnsByList(currentListId);
     }
     
     renderBoard();
@@ -131,9 +171,9 @@ async function loadBoard() {
 // Create default columns
 async function createDefaultColumns() {
     const defaultColumns = [
-        { title: 'To Do', order: 0 },
-        { title: 'In Progress', order: 1 },
-        { title: 'Done', order: 2 }
+        { title: 'To Do', order: 0, listId: currentListId },
+        { title: 'In Progress', order: 1, listId: currentListId },
+        { title: 'Done', order: 2, listId: currentListId }
     ];
     
     for (const col of defaultColumns) {
@@ -782,6 +822,216 @@ function editColumnTitle(columnId, titleElement) {
     });
 }
 
+// Update list title in header
+function updateListTitle() {
+    const listTitleEl = document.getElementById('listTitle');
+    const currentList = lists.find(l => l.id === currentListId);
+    if (currentList && listTitleEl) {
+        listTitleEl.textContent = currentList.title;
+    }
+}
+
+// Edit list title inline
+function editListTitle() {
+    const titleElement = document.getElementById('listTitle');
+    const currentList = lists.find(l => l.id === currentListId);
+    if (!currentList) return;
+    
+    const currentTitle = currentList.title;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentTitle;
+    input.className = 'list-title-input';
+    
+    titleElement.replaceWith(input);
+    input.focus();
+    input.select();
+    
+    const saveEdit = async () => {
+        const newTitle = input.value.trim();
+        if (newTitle && newTitle !== currentTitle) {
+            // Check for unique name
+            const existingList = lists.find(l => l.id !== currentListId && l.title.toLowerCase() === newTitle.toLowerCase());
+            if (existingList) {
+                alert('A list with this name already exists. Please choose a different name.');
+                input.focus();
+                input.select();
+                return;
+            }
+            
+            currentList.title = newTitle;
+            await kanbanDB.updateList(currentList);
+            lists = await kanbanDB.getAllLists();
+        }
+        
+        // Restore the h1 element
+        const newTitleEl = document.createElement('h1');
+        newTitleEl.id = 'listTitle';
+        newTitleEl.className = 'list-title';
+        newTitleEl.title = 'Click to edit list name';
+        newTitleEl.textContent = currentList.title;
+        newTitleEl.addEventListener('click', () => editListTitle());
+        input.replaceWith(newTitleEl);
+    };
+    
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            saveEdit();
+        }
+    });
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            // Cancel editing
+            const newTitleEl = document.createElement('h1');
+            newTitleEl.id = 'listTitle';
+            newTitleEl.className = 'list-title';
+            newTitleEl.title = 'Click to edit list name';
+            newTitleEl.textContent = currentTitle;
+            newTitleEl.addEventListener('click', () => editListTitle());
+            input.replaceWith(newTitleEl);
+        }
+    });
+}
+
+// Show list selector modal
+function showListSelectorModal() {
+    const modal = document.createElement('div');
+    modal.className = 'list-selector-modal active';
+    
+    let listItemsHTML = '';
+    lists.forEach(list => {
+        const isActive = list.id === currentListId ? 'active' : '';
+        listItemsHTML += `
+            <div class="list-item ${isActive}" data-list-id="${list.id}">
+                <span class="list-item-name">${escapeHtml(list.title)}</span>
+                <button class="list-item-delete" data-list-id="${list.id}" title="Delete list">
+                    <span class="material-icons">delete</span>
+                </button>
+            </div>
+        `;
+    });
+    
+    modal.innerHTML = `
+        <div class="list-selector-content">
+            <div class="list-selector-header">Select List</div>
+            <div class="list-items">
+                ${listItemsHTML}
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners to list items
+    modal.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', async (e) => {
+            // Don't switch list if clicking delete button
+            if (e.target.closest('.list-item-delete')) return;
+            
+            const listId = parseInt(item.dataset.listId);
+            if (!isNaN(listId) && listId !== currentListId) {
+                currentListId = listId;
+                localStorage.setItem('currentListId', currentListId);
+                updateListTitle();
+                await loadBoard();
+            }
+            modal.remove();
+        });
+    });
+    
+    // Add event listeners to delete buttons
+    modal.querySelectorAll('.list-item-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const listId = parseInt(btn.dataset.listId);
+            if (!isNaN(listId)) {
+                await deleteList(listId, modal);
+            }
+        });
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    document.body.appendChild(modal);
+}
+
+// Show add list modal
+function showAddListModal() {
+    const modal = createModal('Add New List', [
+        { label: 'List Name', name: 'title', type: 'text', required: true }
+    ], async (formData) => {
+        const newTitle = formData.title.trim();
+        
+        // Check for unique name
+        const existingList = lists.find(l => l.title.toLowerCase() === newTitle.toLowerCase());
+        if (existingList) {
+            alert('A list with this name already exists. Please choose a different name.');
+            return;
+        }
+        
+        const list = {
+            title: newTitle,
+            order: lists.length
+        };
+        const newListId = await kanbanDB.addList(list);
+        lists = await kanbanDB.getAllLists();
+        
+        // Switch to the new list
+        currentListId = newListId;
+        localStorage.setItem('currentListId', currentListId);
+        updateListTitle();
+        await loadBoard();
+    });
+    
+    document.body.appendChild(modal);
+    
+    // Focus on title field after modal is rendered
+    setTimeout(() => {
+        const titleInput = modal.querySelector('input[name="title"]');
+        if (titleInput) {
+            titleInput.focus();
+        }
+    }, 10);
+}
+
+// Delete a list
+async function deleteList(listId, modal) {
+    const list = lists.find(l => l.id === listId);
+    if (!list) return;
+    
+    // Don't allow deleting the last list
+    if (lists.length === 1) {
+        alert('Cannot delete the last list. You must have at least one list.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete the list "${list.title}" and all its columns and cards?`)) {
+        // Delete all columns and cards in this list
+        await kanbanDB.deleteColumnsByList(listId);
+        // Delete the list
+        await kanbanDB.deleteList(listId);
+        lists = await kanbanDB.getAllLists();
+        
+        // If we deleted the current list, switch to another one
+        if (listId === currentListId) {
+            currentListId = lists[0].id;
+            localStorage.setItem('currentListId', currentListId);
+            updateListTitle();
+            await loadBoard();
+        }
+        
+        // Update the modal if it's still open
+        if (modal && document.body.contains(modal)) {
+            modal.remove();
+            showListSelectorModal();
+        }
+    }
+}
+
 // Show add column modal
 function showAddColumnModal() {
     const modal = createModal('Add Column', [
@@ -789,7 +1039,8 @@ function showAddColumnModal() {
     ], async (formData) => {
         const column = {
             title: formData.title,
-            order: columns.length
+            order: columns.length,
+            listId: currentListId
         };
         await kanbanDB.addColumn(column);
         await loadBoard();
