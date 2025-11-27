@@ -991,3 +991,106 @@ h1 {
     outline: none;
     font-family: inherit;
 }
+
+/* Share modal styles */
+.share-modal-content {
+    background-color: var(--modal-bg);
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.share-url-preview {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--background);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 12px;
+    font-family: monospace;
+    word-break: break-all;
+    max-height: 100px;
+    overflow-y: auto;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.share-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.share-actions .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-actions .btn .material-icons {
+    font-size: 18px;
+}
+
+/* Edit shared list button */
+.edit-shared-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.edit-shared-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.edit-shared-btn .material-icons {
+    font-size: 18px;
+}
+
+/* View-only mode indicator */
+.view-only-banner {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 15px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Disable interactions in view-only mode */
+.view-only .card {
+    cursor: default;
+}
+
+.view-only .card:hover {
+    border-color: var(--border-color);
+}
+
+.view-only .column {
+    cursor: default;
+}
+
+.view-only .add-card-btn,
+.view-only .add-card-icon-btn,
+.view-only .column-menu-btn,
+.view-only .card-menu-btn,
+.view-only .list-title,
+.view-only .column-title,
+.view-only .list-selector-btn,
+.view-only #settingsAddListBtn,
+.view-only #settingsAddColumnBtn,
+.view-only #settingsShareListBtn {
+    pointer-events: none;
+    opacity: 0.5;
+}
