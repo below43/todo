@@ -923,7 +923,12 @@ function showListSelectorModal() {
     
     modal.innerHTML = `
         <div class="list-selector-content">
-            <div class="list-selector-header">Select List</div>
+            <div class="list-selector-header">
+                <span>Select List</span>
+                <button class="list-add-btn" title="Add new list">
+                    <span class="material-icons">add</span>
+                </button>
+            </div>
             <div class="list-items">
                 ${listItemsHTML}
             </div>
@@ -957,6 +962,15 @@ function showListSelectorModal() {
             }
         });
     });
+    
+    // Add event listener for add list button
+    const addListBtn = modal.querySelector('.list-add-btn');
+    if (addListBtn) {
+        addListBtn.addEventListener('click', () => {
+            modal.remove();
+            showAddListModal();
+        });
+    }
     
     // Close modal when clicking outside
     modal.addEventListener('click', (e) => {
