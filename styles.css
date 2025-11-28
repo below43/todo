@@ -1094,3 +1094,39 @@ h1 {
     pointer-events: none;
     opacity: 0.5;
 }
+
+/* Footer styles */
+.app-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    background: var(--header-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin: 0 20px 20px 20px;
+}
+
+.footer-link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.footer-link:hover {
+    color: var(--primary-color);
+}
+
+.footer-link .material-icons {
+    font-size: 18px;
+}
+
+.footer-separator {
+    color: var(--border-color);
+}
