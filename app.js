@@ -1528,11 +1528,9 @@ function showOverwriteOrNewModal(existingList) {
             <p style="margin-bottom: 20px;">A list named "${escapeHtml(existingList.title)}" already exists. What would you like to do?</p>
             <div class="modal-actions" style="flex-direction: column; gap: 10px;">
                 <button type="button" class="btn btn-primary overwrite-btn" style="width: 100%;">
-                    <span class="material-icons" style="margin-right: 8px;">save</span>
                     Overwrite Existing List
                 </button>
                 <button type="button" class="btn btn-secondary new-btn" style="width: 100%;">
-                    <span class="material-icons" style="margin-right: 8px;">add</span>
                     Create New List
                 </button>
                 <button type="button" class="btn btn-secondary cancel-btn" style="width: 100%;">
