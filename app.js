@@ -40,7 +40,7 @@ async function loadLists() {
     
     // If no lists exist, create a default one
     if (lists.length === 0) {
-        const defaultListId = await kanbanDB.addList({ title: 'TODO', order: 0 });
+        const defaultListId = await kanbanDB.addList({ title: 'Todo', order: 0 });
         lists = await kanbanDB.getAllLists();
         currentListId = defaultListId;
         await createDefaultColumns();
@@ -196,8 +196,8 @@ async function loadBoard() {
 // Create default columns
 async function createDefaultColumns() {
     const defaultColumns = [
-        { title: 'To Do', order: 0, listId: currentListId },
-        { title: 'In Progress', order: 1, listId: currentListId },
+        { title: 'To do', order: 0, listId: currentListId },
+        { title: 'In progress', order: 1, listId: currentListId },
         { title: 'Done', order: 2, listId: currentListId }
     ];
     
@@ -240,8 +240,8 @@ function createColumnElement(column, cards) {
     // Add move up/down buttons in stacked mode
     if (isStacked) {
         menuItems += `
-            <button class="menu-item move-column-up" data-column-id="${column.id}"><span class="material-icons">arrow_upward</span>Move Up</button>
-            <button class="menu-item move-column-down" data-column-id="${column.id}"><span class="material-icons">arrow_downward</span>Move Down</button>
+            <button class="menu-item move-column-up" data-column-id="${column.id}"><span class="material-icons">arrow_upward</span>Move up</button>
+            <button class="menu-item move-column-down" data-column-id="${column.id}"><span class="material-icons">arrow_downward</span>Move down</button>
         `;
     }
     
@@ -259,7 +259,7 @@ function createColumnElement(column, cards) {
                 <span class="card-count">${cardCount}</span>
             </div>
             <div class="column-actions">
-                <button class="add-card-icon-btn" data-column-id="${column.id}" title="Add Card">
+                <button class="add-card-icon-btn" data-column-id="${column.id}" title="Add card">
                     <span class="material-icons">add</span>
                 </button>
                 <div class="menu-container">
@@ -271,7 +271,7 @@ function createColumnElement(column, cards) {
             </div>
         </div>
         <div class="cards" data-column-id="${column.id}"></div>
-        <button class="add-card-btn" data-column-id="${column.id}">+ Add Card</button>
+        <button class="add-card-btn" data-column-id="${column.id}">+ Add card</button>
     `;
     
     // Add cards
@@ -949,7 +949,7 @@ function showListSelectorModal() {
     modal.innerHTML = `
         <div class="list-selector-content">
             <div class="list-selector-header">
-                <span>Select List</span>
+                <span>Select list</span>
                 <button class="list-add-btn" title="Add new list">
                     <span class="material-icons">add</span>
                 </button>
@@ -1009,8 +1009,8 @@ function showListSelectorModal() {
 
 // Show add list modal
 function showAddListModal() {
-    const modal = createModal('Add New List', [
-        { label: 'List Name', name: 'title', type: 'text', required: true }
+    const modal = createModal('Add new list', [
+        { label: 'List name', name: 'title', type: 'text', required: true }
     ], async (formData) => {
         const newTitle = formData.title.trim();
         
@@ -1082,8 +1082,8 @@ async function deleteList(listId, modal) {
 
 // Show add column modal
 function showAddColumnModal() {
-    const modal = createModal('Add Column', [
-        { label: 'Column Title', name: 'title', type: 'text', required: true }
+    const modal = createModal('Add column', [
+        { label: 'Column title', name: 'title', type: 'text', required: true }
     ], async (formData) => {
         const column = {
             title: formData.title,
@@ -1099,8 +1099,8 @@ function showAddColumnModal() {
 
 // Show add card modal
 function showAddCardModal(columnId) {
-    const modal = createModal('Add Card', [
-        { label: 'Card Title', name: 'title', type: 'text', required: true },
+    const modal = createModal('Add card', [
+        { label: 'Card title', name: 'title', type: 'text', required: true },
         { label: 'Link (optional)', name: 'link', type: 'url', required: false }
     ], async (formData) => {
         const cards = await kanbanDB.getCardsByColumn(columnId);
@@ -1127,8 +1127,8 @@ function showAddCardModal(columnId) {
 
 // Edit card
 function editCard(card) {
-    const modal = createModal('Edit Card', [
-        { label: 'Card Title', name: 'title', type: 'text', required: true, value: card.title },
+    const modal = createModal('Edit card', [
+        { label: 'Card title', name: 'title', type: 'text', required: true, value: card.title },
         { label: 'Link (optional)', name: 'link', type: 'url', required: false, value: card.link }
     ], async (formData) => {
         card.title = formData.title;
@@ -1166,7 +1166,7 @@ async function showMoveCardModal(card) {
     
     modal.innerHTML = `
         <div class="modal-content">
-            <div class="modal-header">Move Card</div>
+            <div class="modal-header">Move card</div>
             <form id="modalForm">
                 <div class="form-group">
                     <label for="targetColumn">Move to column:</label>
@@ -1524,14 +1524,14 @@ function showOverwriteOrNewModal(existingList) {
     
     modal.innerHTML = `
         <div class="modal-content">
-            <div class="modal-header">List Already Exists</div>
+            <div class="modal-header">List already exists</div>
             <p style="margin-bottom: 20px;">A list named "${escapeHtml(existingList.title)}" already exists. What would you like to do?</p>
             <div class="modal-actions" style="flex-direction: column; gap: 10px;">
                 <button type="button" class="btn btn-primary overwrite-btn" style="width: 100%;">
-                    Overwrite Existing List
+                    Overwrite existing list
                 </button>
                 <button type="button" class="btn btn-secondary new-btn" style="width: 100%;">
-                    Create New List
+                    Create new list
                 </button>
                 <button type="button" class="btn btn-secondary cancel-btn" style="width: 100%;">
                     Cancel
@@ -1705,7 +1705,7 @@ async function showShareModal() {
     
     modal.innerHTML = `
         <div class="share-modal-content">
-            <div class="modal-header">Share List: ${escapeHtml(currentList.title)}</div>
+            <div class="modal-header">Share list: ${escapeHtml(currentList.title)}</div>
             <p style="margin-bottom: 15px; color: var(--text-secondary);">
                 Share this URL with others. They will be able to view and optionally save a copy of your list.
             </p>
@@ -1764,8 +1764,8 @@ async function showShareModal() {
         shareBtn.addEventListener('click', async () => {
             try {
                 await navigator.share({
-                    title: `TODO List: ${currentList.title}`,
-                    text: `Check out my TODO list: ${currentList.title}`,
+                    title: `Todo list: ${currentList.title}`,
+                    text: `Check out my todo list: ${currentList.title}`,
                     url: shareUrl
                 });
             } catch (err) {
